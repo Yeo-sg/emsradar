@@ -14,37 +14,69 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="응급레이더">
   <meta name="application-name" content="응급레이더">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script>
+    // 실제 앱(Streamlit) 주소. 홈 화면 아이콘으로 열었거나 ?demo=1 이면 바로 앱으로 이동한다.
+    var APP = "https://ems-collector-fc224frzqfak8autmfvxff.streamlit.app/";
+    var installed = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    var appUrl = APP + location.search;
+    if (installed || new URLSearchParams(location.search).has("demo") || new URLSearchParams(location.search).has("go")) {
+      location.replace(appUrl);
+    }
+  </script>
   <style>
-    :root { color-scheme: light dark; }
-    html, body { margin: 0; height: 100%; background: #ffffff; }
-    @media (prefers-color-scheme: dark) { html, body { background: #0e1117; } }
-    #app { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; }
-    /* 서버가 깨어나는 동안 보이는 안내 */
-    #wait { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; gap: 14px; font-family: -apple-system, "Malgun Gothic", sans-serif;
-            color: #5f6368; font-size: 15px; text-align: center; padding: 0 24px; }
-    #wait img { width: 88px; height: 88px; border-radius: 20px; }
-    #wait b { color: #d2262d; font-size: 22px; }
-    @media (prefers-color-scheme: dark) { #wait { color: #c3c2b7; } }
+    :root { color-scheme: light dark; --bg: #ffffff; --ink: #1f2328; --muted: #5f6368; --card: #f4f5f7; --red: #d2262d; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #0e1117; --ink: #f0efec; --muted: #b4b6bb; --card: #1a1d23; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink);
+           font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+    main { max-width: 480px; margin: 0 auto; padding: 48px 20px 40px; text-align: center; }
+    .logo { width: 112px; height: 112px; border-radius: 26px; }
+    h1 { font-size: 34px; margin: 18px 0 6px; }
+    .sub { color: var(--muted); font-size: 16px; margin: 0 0 28px; line-height: 1.5; }
+    .open { display: block; background: var(--red); color: #fff; text-decoration: none; font-size: 20px;
+            font-weight: 700; padding: 18px; border-radius: 14px; }
+    .note { color: var(--muted); font-size: 13px; margin: 10px 0 28px; }
+    details { text-align: left; background: var(--card); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+    summary { font-weight: 700; font-size: 16px; cursor: pointer; }
+    ol { margin: 10px 0 2px; padding-left: 20px; line-height: 1.7; font-size: 15px; }
+    #installBtn { display: none; width: 100%; margin-bottom: 12px; background: transparent; color: var(--red);
+                  border: 2px solid var(--red); font-size: 17px; font-weight: 700; padding: 14px; border-radius: 14px; }
   </style>
 </head>
 <body>
-  <div id="wait">
-    <img src="icons/icon-192.png" alt="">
-    <b>응급레이더</b>
-    <span>여는 중입니다. 오랫동안 쓰지 않았다면 서버가 깨어나는 데 30초~1분 걸릴 수 있습니다.</span>
-  </div>
-  <iframe id="app" title="응급레이더" allow="clipboard-write; geolocation"></iframe>
-  <script>
-    // 실제 앱(Streamlit)을 화면 가득 띄운다. 주소 뒤의 ?demo=1 같은 값은 그대로 넘긴다.
-    var APP = "https://ems-collector-fc224frzqfak8autmfvxff.streamlit.app/";
-    var q = new URLSearchParams(location.search);
-    q.set("embed", "true");
-    var frame = document.getElementById("app");
-    frame.addEventListener("load", function () { document.getElementById("wait").style.display = "none"; });
-    frame.src = APP + "?" + q.toString();
-    if ("serviceWorker" in navigator) { navigator.serviceWorker.register("sw.js").catch(function () {}); }
-  </script>
+<main>
+  <img class="logo" src="icons/icon-512.png" alt="응급레이더 로고">
+  <h1>응급레이더</h1>
+  <p class="sub">버튼 몇 번으로, 지금 받아 줄 응급실을 찾는<br>구급대원용 웹 앱</p>
+  <a class="open" id="openBtn" href="#">응급레이더 열기</a>
+  <p class="note">오랫동안 쓰지 않았다면 처음 열 때 30초~1분 걸릴 수 있습니다.</p>
+
+  <button id="installBtn">이 기기에 설치하기</button>
+
+  <details>
+    <summary>📱 아이폰 · 아이패드 (사파리)</summary>
+    <ol><li>아래쪽 공유 버튼(□↑)을 누릅니다. 최신 iOS는 ⋯ → 공유</li><li><b>홈 화면에 추가</b>를 누릅니다</li><li>이름 그대로 <b>추가</b></li></ol>
+  </details>
+  <details>
+    <summary>🤖 안드로이드 (크롬 · 삼성 인터넷)</summary>
+    <ol><li>위의 <b>이 기기에 설치하기</b> 버튼, 또는 ⋮ → <b>홈 화면에 추가</b></li><li>삼성 인터넷은 ≡ → 현재 페이지 추가 → 홈 화면</li></ol>
+  </details>
+  <details>
+    <summary>💻 윈도우 · 맥 (크롬 · 엣지)</summary>
+    <ol><li>주소창 오른쪽 <b>설치</b> 아이콘, 또는 위의 <b>이 기기에 설치하기</b></li><li>맥 사파리: 화면 맨 위 메뉴 막대 <b>파일 → Dock에 추가</b></li></ol>
+  </details>
+</main>
+<script>
+  document.getElementById("openBtn").href = appUrl;
+  // 크롬·엣지·안드로이드에서 설치 버튼 보여 주기
+  var deferred;
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault(); deferred = e; document.getElementById("installBtn").style.display = "block";
+  });
+  document.getElementById("installBtn").addEventListener("click", function () {
+    if (deferred) { deferred.prompt(); deferred = null; this.style.display = "none"; }
+  });
+  if ("serviceWorker" in navigator) { navigator.serviceWorker.register("sw.js").catch(function () {}); }
+</script>
 </body>
 </html>
